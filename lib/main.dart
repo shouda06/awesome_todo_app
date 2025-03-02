@@ -43,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   
   Future<void> _initList() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('LIST');
+    final jsonString = prefs.getString('LISTv1');
     if (jsonString != null) {
       final jsonObject = jsonDecode(jsonString);
        setState(() {
@@ -58,13 +58,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _incrementCounter() async {
     if (_controller.text.isNotEmpty) {
+      final addToDos = [];
+      final userInput = _controller.text;
+      final divideUserInputArray = userInput.split('\n');
+      var titleNumber = 0;
+      divideUserInputArray.forEach((divideUserInput) {
+        if(divideUserInput == '') return;
+        if(divideUserInput[0] != '・'){
+          addToDos.add({'title': divideUserInput, 'completed': false, 'time': DateTime.now().toString(), 'subtitles': []});
+          titleNumber += 1;
+        }else{
+          addToDos[titleNumber - 1]['subtitles'].add({'subTitle': divideUserInput, 'completed': false});
+        }
+      });
       setState(() {
-        _counter.add({'text': _controller.text, 'completed': false});
+        _counter.addAll(addToDos);
         _controller.text = '';
+        print(_counter);
       });
       final prefs = await SharedPreferences.getInstance();
       final jsonString = jsonEncode(_counter).toString();
-      await prefs.setString('LIST', jsonString);
+      await prefs.setString('LISTv1', jsonString);
     }
    }
 
@@ -74,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     final prefs = await SharedPreferences.getInstance();
     final jsonString = jsonEncode(_counter).toString();
-    await prefs.setString('LIST', jsonString);
+    await prefs.setString('LISTv1', jsonString);
   }
 
   void _removeItem(int index) async {
@@ -83,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     final prefs = await SharedPreferences.getInstance();
     final jsonString = jsonEncode(_counter).toString();
-    await prefs.setString('LIST', jsonString);
+    await prefs.setString('LISTv1', jsonString);
   }
 
 
@@ -106,7 +120,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ListView.builder(
                 itemCount: _counter.length,
                 itemBuilder: (context, index) => Dismissible(
-                  key: Key(_counter[index]['text']),
+                  key: Key(_counter[index]['title']),
                   onDismissed: (direction) {
                     _removeItem(index);
                   },
@@ -119,21 +133,50 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: ListTile(
                     title: GestureDetector(
                       onTap: () => _toggleCompletion(index),
-                      child: Container(
-                        padding: EdgeInsets.only(top: 4, bottom: 4, left: 12, right: 12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          color: Color.fromRGBO(152, 233, 157, 1),
-                        ),
-                        child: Text(
-                          _counter[index]['text'],
-                          style: TextStyle(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(top: 4, bottom: 4, left: 12, right: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Color.fromRGBO(152, 233, 157, 1),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _counter[index]['title'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    decoration: _counter[index]['completed']
+                                        ? TextDecoration.lineThrough
+                                        : TextDecoration.none,
+                                  ),
+                                ),
+                               ...( _counter[index]['subtitles'].map((subTitle){
+                                  return Text(
+                                  subTitle['subTitle'],
+                                    style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    decoration: _counter[index]['completed']
+                                        ? TextDecoration.lineThrough
+                                        : TextDecoration.none,
+                                    ),
+                                  );
+                                })).toList()
+                              ],
+                            ),
+                          ),
+                          Text(
+                            _counter[index]['time'],
+                            style: TextStyle(
                             fontWeight: FontWeight.w500,
                             decoration: _counter[index]['completed']
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
-                          ),
-                        ),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -148,6 +191,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Container(
                       padding: EdgeInsets.all(10),
                       child: TextField(
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
                         decoration: InputDecoration(
                           border: InputBorder.none,
                           fillColor: Color.fromRGBO(236, 237, 238, 1),
