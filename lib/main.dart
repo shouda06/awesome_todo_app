@@ -34,6 +34,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> _counter = [];
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();  // スクロールコントローラー追加
 
   @override
   void initState(){
@@ -75,6 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
         _counter.addAll(addToDos);
         _controller.text = '';
         print(_counter);
+      });
+      Future.delayed(Duration(milliseconds: 100), () {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent); // スクロールを最下部に移動
       });
       final prefs = await SharedPreferences.getInstance();
       final jsonString = jsonEncode(_counter).toString();
@@ -118,6 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             Flexible(
               child: ListView.builder(
+                controller: _scrollController,  // スクロールコントローラー設定
                 itemCount: _counter.length,
                 itemBuilder: (context, index) => Dismissible(
                   key: Key(_counter[index]['title']),
