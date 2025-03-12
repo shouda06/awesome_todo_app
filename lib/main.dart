@@ -216,7 +216,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                       _toggleCompletionSub(index, subTitle.key);
                                     },
                                     child: Container(
-                                      color: Colors.red,
                                       child: Text(
                                       subTitle.value['subTitle'],
                                         style: TextStyle(
