@@ -96,6 +96,15 @@ class _MyHomePageState extends State<MyHomePage> {
     await prefs.setString('LISTv1', jsonString);
   }
 
+  void _toggleCompletionSub(int parentIndex, int childIndex) async {
+    setState(() {
+      _counter[parentIndex]['subtitles'][childIndex]['completed'] = !_counter[parentIndex]['subtitles'][childIndex]['completed'];
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = jsonEncode(_counter).toString();
+    await prefs.setString('LISTv1', jsonString);
+  }
+
   void _removeItem(int index) async {
     setState(() {
       _counter.removeAt(index);
@@ -201,14 +210,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                         : TextDecoration.none,
                                   ),
                                 ),
-                               ...( _counter[index]['subtitles'].map((subTitle){
-                                  return Text(
-                                  subTitle['subTitle'],
-                                    style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    decoration: _counter[index]['completed']
-                                        ? TextDecoration.lineThrough
-                                        : TextDecoration.none,
+                               ...( _counter[index]['subtitles'].asMap().entries.map((subTitle){
+                                  return GestureDetector(
+                                    onTap: () {
+                                      _toggleCompletionSub(index, subTitle.key);
+                                    },
+                                    child: Container(
+                                      color: Colors.red,
+                                      child: Text(
+                                      subTitle.value['subTitle'],
+                                        style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        decoration: _counter[index]['completed'] || subTitle.value['completed']
+                                            ? TextDecoration.lineThrough
+                                            : TextDecoration.none,
+                                        ),
+                                      ),
                                     ),
                                   );
                                 })).toList()
