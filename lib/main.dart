@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import "package:intl/intl.dart";
 
 void main() {
   runApp(const MyApp());
@@ -104,8 +105,30 @@ class _MyHomePageState extends State<MyHomePage> {
     await prefs.setString('LISTv1', jsonString);
   }
 
+  String dateFormat(String $datetimeString) {
+    final datetime = DateTime.parse($datetimeString);
+    final formatter = DateFormat('MM/dd');
+    return formatter.format(datetime);
+  }
 
+  String timeFormat(String $datetimeString) {
+    final datetime = DateTime.parse($datetimeString);
+    final formatter = DateFormat('H:m');
+    return formatter.format(datetime);
+  }
 
+  bool isShowDate(dynamic arr, int i) {
+    if(i <= 0) {
+      return true;
+    }
+    final correntDatetime = DateTime.parse(arr[i]['time']);
+    final beforeDatetime = DateTime.parse(arr[i - 1]['time']);
+    final formatter = DateFormat('MM/dd');
+    final correntFormatted = formatter.format(correntDatetime);
+    final beforeFormatted = formatter.format(beforeDatetime);
+
+    return correntFormatted != beforeFormatted;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +162,27 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: GestureDetector(
                       onTap: () => _toggleCompletion(index),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
+                          isShowDate(_counter, index) ? Container(
+                            margin: EdgeInsets.only(bottom: 10),
+                            alignment: Alignment.center,
+                            width: double.infinity,
+                            child: Container(
+                              padding: EdgeInsets.only(right: 6, left: 6, top: 1, bottom: 1),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Color.fromARGB(60, 0, 0, 0),
+                              ),
+                              child: Text(
+                                dateFormat(_counter[index]['time']),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ) : SizedBox(),
                           Container(
                             padding: EdgeInsets.only(top: 4, bottom: 4, left: 12, right: 12),
                             decoration: BoxDecoration(
@@ -148,6 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               color: Color.fromRGBO(152, 233, 157, 1),
                             ),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   _counter[index]['title'],
@@ -172,13 +215,13 @@ class _MyHomePageState extends State<MyHomePage> {
                               ],
                             ),
                           ),
-                          Text(
-                            _counter[index]['time'],
-                            style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            decoration: _counter[index]['completed']
-                                ? TextDecoration.lineThrough
-                                : TextDecoration.none,
+                          Container(
+                            padding: EdgeInsets.only(top: 4, right: 2),
+                            child: Text(
+                              timeFormat(_counter[index]['time']),
+                              style: TextStyle(
+                                fontSize: 12
+                              ),
                             ),
                           )
                         ],
