@@ -122,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   String timeFormat(String $datetimeString) {
     final datetime = DateTime.parse($datetimeString);
-    final formatter = DateFormat('H:m');
+    final formatter = DateFormat('HH:mm');
     return formatter.format(datetime);
   }
 
